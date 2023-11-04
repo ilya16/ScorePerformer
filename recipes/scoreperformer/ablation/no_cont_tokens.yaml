@@ -1,0 +1,22 @@
+base: scoreperformer/base.yaml
+
+_general_:
+  device: cuda:0
+  seed: 23
+
+  _dirname_: results
+  _label_: ScorePerformer_noContTE
+
+
+data:
+  dataset:
+    root: ???
+
+
+model:
+  perf_decoder:
+    token_embeddings:
+      discrete: true
+      continuous: false
+      continuous_dense: false
+      discrete_ids:

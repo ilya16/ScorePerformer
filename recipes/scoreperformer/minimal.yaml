@@ -1,0 +1,16 @@
+base: scoreperformer/base.yaml
+
+_general_:
+  device: cuda:0
+  seed: 23
+
+  _dirname_: results
+  _label_: ScorePerformer_base
+
+
+data:
+  dataset:
+    root: ???
+
+    performance_directions: ???  # data/directions/direction_classes.json
+    score_directions_dict: ???

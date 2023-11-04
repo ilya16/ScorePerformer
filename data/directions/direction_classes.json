@@ -1,0 +1,60 @@
+{
+    "dynamic/absolute": [
+        "dynamic/ppp",
+        "dynamic/pp",
+        "dynamic/p",
+        "dynamic/mp",
+        "dynamic/mf",
+        "dynamic/f",
+        "dynamic/ff",
+        "dynamic/fff",
+        "dynamic/fp"
+    ],
+    "dynamic/hairpin": [
+        "dynamic/crescendo",
+        "dynamic/diminuendo"
+    ],
+    "dynamic/accent": [
+        "dynamic/sf",
+        "dynamic/rf"
+    ],
+    "tempo/absolute": [
+        "tempo/grave",
+        "tempo/largo",
+        "tempo/larghetto",
+        "tempo/lento",
+        "tempo/adagio",
+        "tempo/andante",
+        "tempo/andantino",
+        "tempo/moderato",
+        "tempo/allegretto",
+        "tempo/allegro",
+        "tempo/vivace",
+        "tempo/presto",
+        "tempo/prestissimo"
+    ],
+    "tempo/relative": [
+        "tempo/accelerando",
+        "tempo/ritardando",
+        "tempo/rallentando",
+        "tempo/stringendo",
+        "tempo/calando",
+        "tempo/pi\u00f9 mosso",
+        "tempo/animato",
+        "tempo/stretto",
+        "tempo/smorzando",
+        "tempo/ritenuto"
+    ],
+    "articulation/arpeggiate": [
+        "articulation/arpeggiate"
+    ],
+    "articulation/fermata": [
+        "articulation/fermata"
+    ],
+    "articulation/staccato": [
+        "articulation/staccato"
+    ],
+    "articulation/tenuto": [
+        "articulation/tenuto"
+    ]
+}

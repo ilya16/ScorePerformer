@@ -1,0 +1,211 @@
+base: default.yaml
+
+_general_:
+  device: cuda:0
+  seed: 23
+
+  _dirname_: results
+  _label_: ScorePerformer_base
+
+  resume_from_checkpoint:
+  warm_start: false
+
+
+data:
+  dataset:
+    _name_: LocalScorePerformanceDataset
+    _splits_:
+      train: train
+      eval: eval
+
+    root: ???
+    use_alignments: false
+    auxiliary_data_keys: ["bars", "initial_tempos"]
+
+    performance_directions: ???  # data/directions/direction_classes.json
+    score_directions_dict: ???
+
+    max_seq_len: 256
+    max_bar: 256
+    bar_sliding_window: 16
+
+    sample_bars: true
+    sample_note_shift: 0.5
+    force_max_seq_len: 0.5
+
+    fit_to_max_bar: false  # fit bar tokens to max bar (to avoid range errors during training)
+    fit_to_zero_bar: true
+    sample_bar_offset: false
+
+    add_sos_eos: true  # SOS/EOS tokens for whole sequences, not the sampled subsequences
+
+    sample: true
+    seed: ${_general_.seed}
+
+    augment_performance: true
+    pitch_shift_range: [-3, 3]
+    velocity_shift_range: [-12, 12]  # in velocity indices
+    tempo_shift_range: [0, 0]   # in tempo bins (2 ** (1 / 24))
+
+    noisy_performance: false  # compute performance style of the noisy performance
+    noise_strength: 0.5  # multiplier for noisy performance augmentations
+    noisy_random_bars: 0.5  # probability of sampling random bars
+
+    deadpan_performance: 0.25  # probability of using deadpan performance
+
+    zero_out_silent_durations: true  # set durations of unperformed notes to 0
+    delete_silent_notes: true
+
+    preload: true
+    cache: true
+
+  collator:
+    _name_: MixedLMScorePerformanceCollator
+    mask_ignore_token_ids: [0, 1, 2, 3]  # PAD, MASK, SOS, EOS
+    mask_ignore_token_dims: [0, 1, 2, 4, 6, 7, 8, 9]  # _nT: bar, position, pitch, duration, time_sig, pos_shift, notes_in_onset, pos_in_onset
+
+
+model:
+  _name_: ScorePerformer
+  _version_: v0.4.4
+
+  dim: 256
+  tie_token_emb: true
+  mode: mixlm
+
+  score_encoder:
+    _disable_: false
+
+    token_embeddings:
+      _target_: simple
+      emb_dims: ${model.perf_decoder.token_embeddings.emb_dims}
+      mode: ${model.perf_decoder.token_embeddings.mode}
+      emb_norm: ${model.perf_decoder.token_embeddings.emb_norm}
+      discrete: ${model.perf_decoder.token_embeddings.discrete}
+      continuous: ${model.perf_decoder.token_embeddings.continuous}
+      continuous_dense: ${model.perf_decoder.token_embeddings.continuous_dense}
+      discrete_ids: ${model.perf_decoder.token_embeddings.discrete_ids}
+      tie_keys:
+
+    emb_norm: ${model.perf_decoder.emb_norm}
+    emb_dropout: ${model.perf_decoder.emb_dropout}
+    use_abs_pos_emb: ${model.perf_decoder.use_abs_pos_emb}
+
+    transformer:
+      _target_: encoder
+
+      depth: 2
+      heads: 4
+
+      attention: ${model.perf_decoder.transformer.attention}
+      feed_forward: ${model.perf_decoder.transformer.feed_forward}
+
+  perf_encoder:
+    token_embeddings:
+      _target_: simple
+      emb_dims: ${model.perf_decoder.token_embeddings.emb_dims}
+      mode: ${model.perf_decoder.token_embeddings.mode}
+      emb_norm: ${model.perf_decoder.token_embeddings.emb_norm}
+      discrete: ${model.perf_decoder.token_embeddings.discrete}
+      continuous: ${model.perf_decoder.token_embeddings.continuous}
+      continuous_dense: ${model.perf_decoder.token_embeddings.continuous_dense}
+      discrete_ids: ${model.perf_decoder.token_embeddings.discrete_ids}
+      tie_keys:
+
+    emb_norm: true
+    emb_dropout: 0
+    use_abs_pos_emb: false
+
+    latent_dim: [32, 20, 8, 4]
+    aggregate_mode: [mean, bar_mean, beat_mean, onset_mean]
+    latent_dropout: [0.0, 0.1, 0.2, 0.4]
+
+    hierarchical: true
+    inclusive_latent_dropout: true
+    deadpan_zero_latent: true
+    loss_weight: 1.
+
+    transformer:
+      _target_: encoder
+
+      depth: 4
+      heads: 4
+
+      attention: ${model.perf_decoder.transformer.attention}
+      feed_forward: ${model.perf_decoder.transformer.feed_forward}
+
+  perf_decoder:
+    token_embeddings:
+      _target_: multi-seq
+      emb_dims: 128
+      mode: cat
+      emb_norm: true
+      discrete: false
+      continuous: true
+      continuous_dense: true
+      discrete_ids: [0, 1, 2, 3]
+      tie_keys:
+      multiseq_mode: post-cat
+
+    emb_norm: true
+    emb_dropout: 0
+    use_abs_pos_emb: false
+
+    context_emb_mode: cat  # (`cat` or `attention`)
+    style_emb_dim: ${model.perf_encoder.latent_dim}
+    style_emb_mode: adanorm  # (`cat` or `adanorm`)
+
+    transformer:
+      _target_: decoder
+
+      depth: 4
+      heads: 4
+
+      attention:
+        dim_head: 64
+        one_kv_head: true
+        dropout: 0.1
+
+        alibi_pos_bias: true
+        alibi_learned: true
+
+      feed_forward:
+        mult: 4
+        glu: true
+        swish: true
+        dropout: 0.1
+
+    lm_head:
+      _target_: lm-tied
+
+    regression_head:
+      _disable_: true
+      regression_keys: ["Velocity", "Tempo", "RelOnsetDev", "RelPerfDuration"]
+
+  classifiers:
+    _disable_: false
+    classifier:
+      hidden_dims: []
+      dropout: 0.2
+    loss_weight: 1.
+    weighted_classes: true
+    detach_inputs: true
+
+
+evaluator:
+  _name_: ScorePerformerEvaluator
+  ignore_keys: ["Bar", "Position", "Pitch", "Duration", "TimeSig", "PositionShift", "NotesInOnset", "PositionInOnset"]
+  weighted_distance: true
+
+
+trainer:
+  epochs: 1000
+  batch_size: 128
+  eval_batch_size: 128
+
+  progress_metrics: ["loss", "accuracy"]
+
+  save_rewrite_checkpoint: true
+
+  metric_for_best_model: accuracy
+  metric_maximize: true

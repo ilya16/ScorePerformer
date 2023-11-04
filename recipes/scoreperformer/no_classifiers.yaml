@@ -1,0 +1,21 @@
+base: scoreperformer/base.yaml
+
+_general_:
+  device: cuda:0
+  seed: 23
+
+  _dirname_: results
+  _label_: ScorePerformer_noClf
+
+
+data:
+  dataset:
+    root: ???
+
+    # leave empty
+    performance_directions:
+    score_directions_dict:
+
+model:
+  classifiers:
+    _disable_: true

@@ -1,0 +1,106 @@
+_general_:
+  device: cuda:0
+  seed: 23
+
+  _dirname_: results
+  _label_: ???
+
+  output_dir:  # either a full path or a list of path elements
+    - ${_general_._dirname_}
+    - ${model._name_}
+    - ${model._version_}
+    - ${date:}
+    - ${_general_._label_}
+
+  resume_from_checkpoint:
+  warm_start: false
+
+
+data:
+  dataset:
+    _name_: ???
+
+  collator:
+    _name_: ???
+
+
+model:
+  _name_: ???
+  _version_: v0.1
+
+
+evaluator:
+  _name_: ???
+
+
+trainer:
+  # general
+  output_dir: ${_general_.output_dir}
+
+  do_train: true
+  do_eval: true
+  eval_mode: false
+
+  device: ${_general_.device}
+  seed: ${_general_.seed}
+
+  # logging
+  log_dir: logs
+  log_to_file: true
+
+  dashboard_logger: "tensorboard"
+  log_strategy: steps
+  log_steps: 5
+  log_first_step: true
+  log_raw_to_console: true
+
+  disable_tqdm: false
+  progress_steps: 5
+  progress_metrics: ["loss"]
+
+  ignore_data_skip: false
+
+  # data
+  num_workers: 4
+  pin_memory: true
+  shuffle: true   # will shuffle training set only
+
+  # training & evaluation
+  epochs: 100
+  max_steps: -1
+  batch_size: 32
+
+  eval_batch_size: 64
+  eval_batches:
+
+  eval_strategy: epoch    # evaluation and checkpoint steps measure: `epoch` or `steps`
+  eval_steps: 1   # how frequently (in epochs/steps) model evaluation should be performed
+
+  optimization:
+    lr: !!float 2e-4
+    optimizer: adamw
+    optimizer_params:
+      weight_decay: !!float 1e-6
+    lr_scheduler: exponential
+    lr_scheduler_params:
+      gamma: 0.995
+    grad_clip: 2.0
+    grad_accum_steps: 1
+    mixed_precision: true
+
+  # checkpointing
+  save_strategy: epoch
+  save_steps: 1
+  save_optimizer: false
+  save_best_only: true
+  save_rewrite_checkpoint: false
+
+  metric_for_best_model: loss
+  metric_maximize: false
+
+  resume_from_checkpoint: ${_general_.resume_from_checkpoint}
+  warm_start: ${_general_.warm_start}
+  ignore_layers: []
+  ignore_mismatched_keys: true
+  finetune_layers: []
+  restore_lr: true

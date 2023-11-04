@@ -1,0 +1,11 @@
+numpy>=1.23,<1.24
+torch>=2.0.1
+miditok==2.1.6
+matplotlib
+tensorboard>=2.6.0
+omegaconf==2.3.0
+loguru==0.7.0
+tqdm>=4.63.0
+note_seq==0.0.5
+einops
+git+https://github.com/mac-marg-pianist/musicXML_parser

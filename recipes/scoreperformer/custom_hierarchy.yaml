@@ -1,0 +1,36 @@
+base: scoreperformer/base.yaml
+
+_general_:
+  device: cuda:0
+  seed: 23
+
+  _dirname_: results
+  _label_: ScorePerformer_custom
+
+
+data:
+  dataset:
+    root: ???
+
+
+model:
+  perf_encoder:
+    # z=64: base
+    latent_dim: [32, 20, 8, 4]
+    aggregate_mode: [mean, bar_mean, beat_mean, onset_mean]
+    latent_dropout: [0.0, 0.1, 0.2, 0.4]
+
+#    # z=64: -onset
+#    latent_dim: [32, 20, 12]
+#    aggregate_mode: [mean, bar_mean, beat_mean]
+#    latent_dropout: [0.0, 0.1, 0.2]
+
+#    # z=64: -onset, -beat
+#    latent_dim: [32, 32]
+#    aggregate_mode: [mean, bar_mean]
+#    latent_dropout: [0.0, 0.1]
+
+#    # z=64: -onset, -beat, -bar
+#    latent_dim: [64]
+#    aggregate_mode: [mean]
+#    latent_dropout: [0.0]
