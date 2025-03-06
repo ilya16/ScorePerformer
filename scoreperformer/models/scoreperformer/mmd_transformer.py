@@ -62,8 +62,8 @@ class MMDTupleTransformer(TupleTransformer):
             num_tokens: Dict[str, int],
             dim: int = 512,
             max_seq_len: int = 1024,
-            transformer: Union[DictConfig, TransformerConfig] = TransformerConfig(_target_="default"),
-            token_embeddings: Union[DictConfig, TupleTokenEmbeddingsConfig] = TupleTokenEmbeddingsConfig(),
+            transformer: Union[DictConfig, TransformerConfig] = None,
+            token_embeddings: Union[DictConfig, TupleTokenEmbeddingsConfig] = None,
             use_abs_pos_emb: bool = True,
             emb_norm: bool = False,
             emb_dropout: float = 0.0,
@@ -84,6 +84,10 @@ class MMDTupleTransformer(TupleTransformer):
             deadpan_zero_latent: bool = False,  # optimize latents to zero for deadpan performances
             loss_weight: float = 1.0
     ):
+        if transformer is None:
+            transformer = TransformerConfig(_target_="default")
+        if token_embeddings is None:
+            token_embeddings = TupleTokenEmbeddingsConfig()
         super().__init__(
             num_tokens=num_tokens,
             dim=dim,
