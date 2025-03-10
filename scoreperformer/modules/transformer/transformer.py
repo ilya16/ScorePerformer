@@ -5,7 +5,7 @@ Adapted from: https://github.com/lucidrains/x-transformers
 """
 
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import partial
 from typing import Optional, Union, List
 
@@ -39,8 +39,8 @@ class TransformerConfig(VariableModuleConfig):
     depth: int = 4
     heads: int = 8
 
-    attention: Union[AttentionConfig, DictConfig] = AttentionConfig()
-    feed_forward: Union[FeedForwardConfig, DictConfig] = FeedForwardConfig()
+    attention: Union[AttentionConfig, DictConfig] = None
+    feed_forward: Union[FeedForwardConfig, DictConfig] = None
 
     causal: bool = False
     cross_attend: bool = False
@@ -58,8 +58,8 @@ class Transformer(nn.Module, Constructor):
             dim: int = 512,
             depth: int = 4,
             heads: int = 8,
-            attention: Union[AttentionConfig, DictConfig] = AttentionConfig(),
-            feed_forward: Union[FeedForwardConfig, DictConfig] = FeedForwardConfig(),
+            attention: Union[AttentionConfig, DictConfig] = None,
+            feed_forward: Union[FeedForwardConfig, DictConfig] = None,
             causal: bool = False,
             cross_attend: bool = False,
             only_cross: bool = False,
@@ -68,6 +68,9 @@ class Transformer(nn.Module, Constructor):
             style_emb_dim: Optional[int] = None
     ):
         super().__init__()
+
+        attention = attention if attention else AttentionConfig()
+        feed_forward = feed_forward if feed_forward else FeedForwardConfig()
 
         self.dim = dim
         self.depth = depth

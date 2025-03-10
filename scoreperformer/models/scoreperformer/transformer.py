@@ -1,6 +1,6 @@
 """ TupleTransformer: Transformer with support for tuple token sequences. """
 
-from dataclasses import dataclass, MISSING
+from dataclasses import dataclass, MISSING, field
 from typing import Optional, Union, Dict, List
 
 import torch
@@ -48,9 +48,11 @@ class TupleTransformerConfig(ModuleConfig):
     num_tokens: Dict[str, int] = MISSING
     dim: int = 512
     max_seq_len: int = 1024
-    transformer: Union[DictConfig, TransformerConfig] = TransformerConfig(_target_="default")
+    transformer: Union[DictConfig, TransformerConfig] = field(
+        default_factory=lambda: TransformerConfig(_target_="default"))
 
-    token_embeddings: Union[DictConfig, TupleTokenEmbeddingsConfig] = TupleTokenEmbeddingsConfig()
+    token_embeddings: Union[DictConfig, TupleTokenEmbeddingsConfig] = field(
+        default_factory=TupleTokenEmbeddingsConfig)
     use_abs_pos_emb: bool = True
     emb_norm: bool = False
     emb_dropout: float = 0.0

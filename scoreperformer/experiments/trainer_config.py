@@ -158,7 +158,7 @@ class TrainerConfig(Config):
     )
 
     optimization: OptimizerConfig = field(
-        default=OptimizerConfig(
+        default_factory=lambda: OptimizerConfig(
             lr=1e-3,
             optimizer="adam",
             optimizer_params={"weight_decay": 1e-6},
